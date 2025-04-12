@@ -11,11 +11,12 @@ from telegram.ext import (
     filters,
     ContextTypes,
 )
-import openai
+from datetime import datetime, timedelta
 
 # Настройка логирования
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
@@ -24,21 +25,6 @@ TOKEN = "8071128622:AAFgeGieQRDNRxKTONRf52wm-RP4Z9aIvA4"
 
 # --- КОНФИГУРАЦИЯ ---
 GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY", "da31de3622fc4ee2a0112ab2f28391aa")
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY",
-                                "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")
-
-# --- Инициализация OpenAI ---
-openai_enabled = False
-openai_client = None
-if OPENAI_API_KEY and OPENAI_API_KEY.startswith("sk-"):
-    try:
-        openai_client = openai.OpenAI(api_key=OPENAI_API_KEY)
-        openai_enabled = True
-        logger.info("OpenAI API ключ найден и клиент инициализирован.")
-    except Exception as e:
-        logger.error(f"Ошибка инициализации OpenAI: {e}")
-else:
-    logger.warning("\n!!! ВНИМАНИЕ: OpenAI API Ключ не установлен или недействителен !!!\n")
 
 # Координаты Сочи и параметры поиска
 SOCHI_LAT = 43.5855
@@ -46,7 +32,7 @@ SOCHI_LON = 39.7303
 SEARCH_RADIUS_METERS = 15000
 RESULT_LIMIT = 50
 
-# Категории для выбора (обновлены в соответствии с Flask-приложением)
+# Категории для выбора
 CATEGORIES = {
     "Природа и парки": "natural,leisure.park",
     "Заведения": "catering.restaurant,catering.cafe,catering.fast_food",
@@ -56,54 +42,57 @@ CATEGORIES = {
     "Океанариум и Дельфинарий": "entertainment.aquarium",
     "Сувениры": "commercial.gift_and_souvenir",
     "Туристические объекты": "tourism",
+    "Билеты РЖД": "rzd_tickets",
+}
+
+# Станции для РЖД
+STATIONS = {
+    "Сочи": "2004000",
+    "Москва": "2000000",
+    "Санкт-Петербург": "2006000",
+    "Краснодар": "2034000",
+    "Ростов-на-Дону": "2024000",
 }
 
 
-# Функция для получения персональных рекомендаций от LLM (перенесена из Flask с адаптацией)
-def get_llm_recommendations(interests_list):
-    if not openai_client:
-        return "Сервис персональных рекомендаций недоступен (клиент OpenAI не инициализирован)."
-
-    interests_str = ", ".join(interests_list)
-    prompt = (
-        f"Сгенерируй краткие и полезные туристические рекомендации для туриста из Ирана, "
-        f"посещающего Сочи и интересующегося следующими категориями: {interests_str}. "
-        f"Учти возможные культурные особенности (например, халяльная еда, если релевантно категории 'Гастрономия', "
-        f"места для семейного отдыха). Дай 3-5 конкретных советов или предложений по активностям/местам, "
-        f"связанным с выбранными интересами. Ответ должен быть на русском языке."
-        f"Не включай в ответ приветствия или завершающие фразы, только сами рекомендации списком или абзацами."
-    )
+# Функция для запроса билетов РЖД (заглушка)
+def get_rzd_tickets(from_station, to_station, date):
     try:
-        response = openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",  # Используем gpt-3.5-turbo, как в Flask
-            messages=[
-                {"role": "system", "content": "Ты - полезный туристический ассистент."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=300
-        )
-        recommendation = response.choices[0].message.content.strip()
-        if not recommendation:
-            logger.warning("OpenAI вернул пустой ответ.")
-            return "Не удалось получить конкретные рекомендации от AI."
-        return recommendation
-    except openai.AuthenticationError as e:
-        logger.error(f"Ошибка аутентификации OpenAI: {e}")
-        return "Сервис персональных рекомендаций временно недоступен из-за проблемы с API ключом OpenAI."
-    except openai.RateLimitError as e:
-        logger.error(f"Ошибка лимита запросов OpenAI: {e}")
-        return "Сервис персональных рекомендаций временно недоступен из-за превышения лимита запросов к OpenAI."
-    except openai.APITimeoutError as e:
-        logger.error(f"Таймаут запроса к OpenAI: {e}")
-        return "Сервис персональных рекомендаций не ответил вовремя."
+        # Примерные данные билетов
+        tickets = [
+            {
+                "train": "044С",
+                "departure": f"{date} 08:30",
+                "arrival": f"{date} 20:45",
+                "duration": "12ч 15м",
+                "classes": {
+                    "Плацкарт": {"price": 2500, "seats": 15},
+                    "Купе": {"price": 4500, "seats": 8}
+                }
+            },
+            {
+                "train": "104В",
+                "departure": f"{date} 18:15",
+                "arrival": f"{date} 06:30+1",
+                "duration": "12ч 15м",
+                "classes": {
+                    "Плацкарт": {"price": 2700, "seats": 10},
+                    "Купе": {"price": 4900, "seats": 5},
+                    "СВ": {"price": 7500, "seats": 3}
+                }
+            }
+        ]
+        return tickets, None
     except Exception as e:
-        logger.error(f"Неожиданная ошибка при запросе к OpenAI API: {e}")
-        return f"Не удалось сгенерировать рекомендации из-за ошибки OpenAI: {e}"
+        logger.error(f"Ошибка при запросе билетов РЖД: {e}")
+        return None, f"Ошибка при получении данных о билетах: {e}"
 
 
-# Функция для запроса мест к Geoapify (перенесена из Flask с улучшенной обработкой ошибок)
+# Функция для поиска мест через Geoapify
 def search_places(selected_keys):
+    if "rzd_tickets" in selected_keys:
+        return [], None
+
     geoapify_categories_set = set()
     for key in selected_keys:
         if key in CATEGORIES:
@@ -120,16 +109,15 @@ def search_places(selected_keys):
         'limit': RESULT_LIMIT,
         'apiKey': GEOAPIFY_API_KEY
     }
+
     api_url = "https://api.geoapify.com/v2/places"
     found_places = []
     error_message = None
 
     try:
-        logger.info(f"Запрос к Geoapify с параметрами: {api_params}")
         response = requests.get(api_url, params=api_params, timeout=20)
         response.raise_for_status()
         data = response.json()
-        logger.info(f"Ответ от Geoapify получен. Количество 'features': {len(data.get('features', []))}")
 
         if data.get('features'):
             for feature in data['features']:
@@ -139,58 +127,43 @@ def search_places(selected_keys):
                 lat = properties.get('lat')
                 if name and lon is not None and lat is not None:
                     address = properties.get('formatted', 'Адрес не указан')
-                    place_categories = properties.get('categories', [])
                     map_link = f"https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map=16/{lat}/{lon}"
                     found_places.append({
                         'name': name,
-                        'lat': lat,
-                        'lon': lon,
-                        'map_link': map_link,
                         'address': address,
-                        'place_categories': place_categories,
+                        'map_link': map_link,
                     })
-                else:
-                    logger.warning(f"Пропущено место без имени или координат: {properties}")
 
         if not found_places:
             selected_names = ", ".join(selected_keys)
-            error_message = f"По вашему запросу ({selected_names}) ничего не найдено в окрестностях Сочи в радиусе {SEARCH_RADIUS_METERS / 1000} км."
+            error_message = f"По вашему запросу ({selected_names}) ничего не найдено."
 
     except requests.exceptions.Timeout:
-        logger.error("Ошибка: Запрос к Geoapify API превысил таймаут.")
-        error_message = "Не удалось получить данные от Geoapify: сервер не ответил вовремя."
-    except requests.exceptions.HTTPError as e:
-        logger.error(f"Ошибка HTTP при запросе к Geoapify API: {e.response.status_code} {e.response.text}")
-        error_message = f"Ошибка при обращении к сервису поиска мест ({e.response.status_code}). Возможно, проблема с API ключом Geoapify или параметрами запроса."
-        if e.response.status_code == 401:
-            error_message += " Пожалуйста, проверьте ваш Geoapify API ключ."
+        error_message = "Не удалось получить данные: сервер не ответил вовремя."
     except requests.exceptions.RequestException as e:
-        logger.error(f"Ошибка запроса к Geoapify API: {e}")
-        error_message = f"Не удалось подключиться к сервису поиска мест Geoapify. Проверьте интернет-соединение. Ошибка: {e}"
+        error_message = f"Ошибка подключения: {e}"
     except Exception as e:
-        logger.error(f"Неожиданная ошибка при обработке данных Geoapify: {e}")
-        error_message = f"Произошла внутренняя ошибка сервера при обработке данных: {e}"
+        error_message = f"Произошла ошибка: {e}"
 
     return found_places, error_message
 
 
-# Команда /start (с добавлением кнопок для выбора категорий)
+# Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Создаём интерактивные кнопки для категорий
-    keyboard = []
-    for category in CATEGORIES.keys():
-        keyboard.append([InlineKeyboardButton(category, callback_data=f"category_{category}")])
-
+    keyboard = [
+        [InlineKeyboardButton(cat, callback_data=f"category_{cat}")]
+        for cat in CATEGORIES.keys()
+    ]
     reply_markup = InlineKeyboardMarkup(keyboard)
+
     await update.message.reply_text(
-        "Привет! Я бот, который поможет найти интересные места в Сочи.\n"
-        "Выбери категории, которые тебя интересуют, нажав на кнопки ниже.\n"
-        "После выбора всех категорий нажми 'Готово'.",
+        "Привет! Я бот для поиска мест в Сочи и покупки билетов РЖД.\n"
+        "Выбери интересующие категории:",
         reply_markup=reply_markup
     )
 
 
-# Обработчик нажатий на кнопки категорий
+# Обработчик кнопок
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -200,120 +173,184 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_data["selected_categories"] = []
 
     callback_data = query.data
+
     if callback_data.startswith("category_"):
-        category = callback_data[len("category_"):]
+        category = callback_data[9:]
         if category in user_data["selected_categories"]:
             user_data["selected_categories"].remove(category)
-            await query.message.reply_text(f"Категория '{category}' удалена из выбора.")
+            await query.edit_message_text(f"Категория '{category}' удалена.")
         else:
             user_data["selected_categories"].append(category)
-            await query.message.reply_text(f"Категория '{category}' добавлена в выбор.")
+            await query.edit_message_text(f"Категория '{category}' добавлена.")
 
-        # Обновляем клавиатуру с кнопками
-        keyboard = []
-        for cat in CATEGORIES.keys():
-            prefix = "✅ " if cat in user_data["selected_categories"] else ""
-            keyboard.append([InlineKeyboardButton(f"{prefix}{cat}", callback_data=f"category_{cat}")])
+        # Обновляем клавиатуру
+        keyboard = [
+            [InlineKeyboardButton(
+                f"{'✅ ' if cat in user_data['selected_categories'] else ''}{cat}",
+                callback_data=f"category_{cat}"
+            )]
+            for cat in CATEGORIES.keys()
+        ]
         keyboard.append([InlineKeyboardButton("Готово", callback_data="done")])
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.message.edit_reply_markup(reply_markup=reply_markup)
+
+        await query.edit_message_reply_markup(
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
 
     elif callback_data == "done":
-        selected_categories = user_data.get("selected_categories", [])
-        if not selected_categories:
-            await query.message.reply_text("Пожалуйста, выбери хотя бы одну категорию.")
+        selected = user_data.get("selected_categories", [])
+        if not selected:
+            await query.message.reply_text("Пожалуйста, выберите категории.")
             return
 
-        # Поиск мест через Geoapify
-        places, error_message = search_places(selected_categories)
-        response = f"Результаты для категорий: {', '.join(selected_categories)}\n\n"
-
-        if error_message and not places:
-            await query.message.reply_text(error_message)
-            return
-
-        if places:
-            for place in places[:5]:  # Ограничиваем до 5 мест для лаконичности
-                response += (
-                    f"📍 {place['name']}\n"
-                    f"Адрес: {place['address']}\n"
-                    f"Карта: {place['map_link']}\n"
-                    f"---\n"
-                )
+        if "Билеты РЖД" in selected:
+            keyboard = [
+                [InlineKeyboardButton("Сочи - Москва", callback_data="route_sochi_moscow")],
+                [InlineKeyboardButton("Сочи - СПб", callback_data="route_sochi_spb")],
+                [InlineKeyboardButton("Сочи - Краснодар", callback_data="route_sochi_krasnodar")],
+                [InlineKeyboardButton("Другой маршрут", callback_data="route_custom")],
+            ]
+            await query.message.reply_text(
+                "Выберите маршрут:",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
         else:
-            response += "Места не найдены.\n"
+            places, error = search_places(selected)
+            response = f"Результаты по категориям: {', '.join(selected)}\n\n"
 
-        # Получение рекомендаций от LLM
-        llm_recommendations = get_llm_recommendations(selected_categories)
-        response += f"\nПерсональные рекомендации:\n{llm_recommendations}"
+            if error:
+                response += error
+            elif places:
+                for place in places[:5]:
+                    response += (
+                        f"📍 {place['name']}\n"
+                        f"Адрес: {place['address']}\n"
+                        f"Карта: {place['map_link']}\n\n"
+                    )
+            else:
+                response += "Ничего не найдено."
 
+            await query.message.reply_text(response)
+            user_data["selected_categories"] = []
+
+    elif callback_data.startswith("route_"):
+        route = callback_data[6:]
+
+        if route == "sochi_moscow":
+            from_st, to_st = "Сочи", "Москва"
+        elif route == "sochi_spb":
+            from_st, to_st = "Сочи", "Санкт-Петербург"
+        elif route == "sochi_krasnodar":
+            from_st, to_st = "Сочи", "Краснодар"
+        else:
+            await query.message.reply_text("Введите маршрут в формате: Город - Город")
+            return
+
+        date = (datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y")
+        tickets, error = get_rzd_tickets(from_st, to_st, date)
+
+        if error:
+            await query.message.reply_text(error)
+            return
+
+        if not tickets:
+            await query.message.reply_text(f"На {date} нет поездов {from_st} - {to_st}.")
+            return
+
+        response = f"🚂 Поезда {from_st} - {to_st} на {date}:\n\n"
+        for ticket in tickets:
+            response += (
+                f"Поезд {ticket['train']}\n"
+                f"Отправление: {ticket['departure']}\n"
+                f"Прибытие: {ticket['arrival']}\n"
+                f"В пути: {ticket['duration']}\n"
+            )
+            for cls, info in ticket['classes'].items():
+                response += f"- {cls}: {info['price']} руб. (мест: {info['seats']})\n"
+            response += "\n"
+
+        response += "🔗 Купить билеты: https://pass.rzd.ru"
         await query.message.reply_text(response)
-        # Очищаем выбор пользователя
-        user_data["selected_categories"] = []
 
 
-# Обработка текстовых сообщений (для обратной совместимости)
+# Обработка текстовых сообщений
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
-    logger.info(f"Получено сообщение: '{text}'")
 
-    selected_categories = [cat.strip() for cat in text.split(',')]
-    valid_categories = [cat for cat in selected_categories if cat in CATEGORIES]
+    # Обработка запроса билетов РЖД
+    if " - " in text and any(word in text.lower() for word in ["билет", "поезд", "ржд"]):
+        parts = [p.strip() for p in text.split(" - ") if p.strip()]
+        if len(parts) == 2:
+            from_st, to_st = parts
+            date = (datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y")
+            tickets, error = get_rzd_tickets(from_st, to_st, date)
 
-    if not valid_categories:
-        categories_list = "\n".join([f"- {cat}" for cat in CATEGORIES.keys()])
+            if error:
+                await update.message.reply_text(error)
+                return
+
+            if not tickets:
+                await update.message.reply_text(f"На {date} нет поездов {from_st} - {to_st}.")
+                return
+
+            response = f"🚂 Поезда {from_st} - {to_st} на {date}:\n\n"
+            for ticket in tickets:
+                response += (
+                    f"Поезд {ticket['train']}\n"
+                    f"Отправление: {ticket['departure']}\n"
+                    f"Прибытие: {ticket['arrival']}\n"
+                    f"В пути: {ticket['duration']}\n"
+                )
+                for cls, info in ticket['classes'].items():
+                    response += f"- {cls}: {info['price']} руб. (мест: {info['seats']})\n"
+                response += "\n"
+
+            response += "🔗 Купить билеты: https://pass.rzd.ru"
+            await update.message.reply_text(response)
+            return
+
+    # Обработка обычных категорий
+    selected = [cat.strip() for cat in text.split(',') if cat.strip() in CATEGORIES]
+    if not selected:
+        categories_list = "\n".join(f"- {cat}" for cat in CATEGORIES.keys())
         await update.message.reply_text(
-            f"Пожалуйста, выбери хотя бы одну правильную категорию. Доступные категории:\n{categories_list}\n"
-            "Или используй команду /start для выбора категорий через кнопки."
+            f"Доступные категории:\n{categories_list}\n"
+            "Или используйте /start для выбора."
         )
         return
 
-    # Поиск мест через Geoapify
-    places, error_message = search_places(valid_categories)
-    response = f"Результаты для категорий: {', '.join(valid_categories)}\n\n"
+    places, error = search_places(selected)
+    response = f"Результаты по категориям: {', '.join(selected)}\n\n"
 
-    if error_message and not places:
-        await update.message.reply_text(error_message)
-        return
-
-    if places:
+    if error:
+        response += error
+    elif places:
         for place in places[:5]:
             response += (
                 f"📍 {place['name']}\n"
                 f"Адрес: {place['address']}\n"
-                f"Карта: {place['map_link']}\n"
-                f"---\n"
+                f"Карта: {place['map_link']}\n\n"
             )
     else:
-        response += "Места не найдены.\n"
-
-    # Получение рекомендаций от LLM
-    llm_recommendations = get_llm_recommendations(valid_categories)
-    response += f"\nПерсональные рекомендации:\n{llm_recommendations}"
+        response += "Ничего не найдено."
 
     await update.message.reply_text(response)
 
 
 # Главная функция
 def main():
-    application = ApplicationBuilder().token(TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(button))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app = ApplicationBuilder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
     logger.info("Бот запущен...")
-    application.run_polling()
+    app.run_polling()
 
 
 if __name__ == "__main__":
-    valid_geoapify = GEOAPIFY_API_KEY and GEOAPIFY_API_KEY != "YOUR_API_KEY" and len(GEOAPIFY_API_KEY) > 10
-    valid_openai = openai_client is not None
-
-    if not valid_geoapify:
-        logger.error("\n!!! ВНИМАНИЕ: Geoapify API Ключ не установлен или недействителен !!!\n")
-    if not valid_openai:
-        logger.error("\n!!! ВНИМАНИЕ: Клиент OpenAI не был успешно инициализирован !!!\n")
-
-    if valid_geoapify:
+    if GEOAPIFY_API_KEY and GEOAPIFY_API_KEY != "YOUR_API_KEY":
         main()
     else:
-        logger.error("\nБот не может быть запущен без действительного Geoapify API ключа.\n")
+        logger.error("Ошибка: Неверный Geoapify API ключ!")
