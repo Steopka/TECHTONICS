@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты поиска достопримечательностей</title>
+     <style>
+        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f4f4f4; color: #333; }
+        h1, h2 { color: #0056b3; }
+        h1 { text-align: center; }
+        ul { list-style: none; padding: 0; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 20px; }
+        li { border-bottom: 1px solid #eee; padding: 15px 20px; }
+        li:last-child { border-bottom: none; }
+        li strong { font-size: 1.1em; display: block; margin-bottom: 5px; color: #333;}
+        li a { color: #007bff; text-decoration: none; margin-left: 0; font-size: 0.9em; }
+        li a:hover { text-decoration: underline; }
+        .place-description { font-size: 0.9em; color: #555; margin-top: 8px; line-height: 1.4; }
+        .place-categories { font-style: italic; color: #777; display: block; margin-bottom: 4px; }
+        .place-address { display: block; } /* Адрес на новой строке */
+        .error-message { color: #dc3545; font-weight: bold; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .info-message { color: #0c5460; background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        /* Стили для flash сообщений, если они показываются здесь */
+        .flash-messages { list-style: none; padding: 0; margin-bottom: 20px; }
+        .flash-messages li { padding: 12px 15px; margin-bottom: 10px; border-radius: 4px; border: 1px solid transparent; }
+        .flash-warning { background-color: #fff3cd; border-color: #ffeeba; color: #856404; }
+        .flash-danger { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .flash-info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .back-link { display: inline-block; margin-top: 20px; color: #007bff; text-decoration: none; padding: 8px 15px; border: 1px solid #007bff; border-radius: 4px; }
+        .back-link:hover { background-color: #007bff; color: white; text-decoration: none; }
+        /* Стили для блока рекомендаций */
+        .recommendations { margin-top: 30px; padding: 20px; background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 8px; }
+        .recommendations h3 { margin-top: 0; color: #495057; }
+        .recommendations pre { white-space: pre-wrap; word-wrap: break-word; font-family: inherit; font-size: 0.95em; line-height: 1.6; background-color: #fff; padding: 15px; border: 1px solid #ccc; border-radius: 4px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Результаты поиска в Сочи</h1>
+    <h2>Ваш выбор: {{ selected_categories|join(', ') }}</h2>
+
+    {% if error %}
+        <p class="error-message"><b>Ошибка:</b> {{ error }}</p>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flash-messages">
+        {% for category, message in messages %}
+          <li class="flash-{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+
+    {% if places %}
+        <h2>Найденные места ({{ places|length }}):</h2>
+        <ul>
+            {% for place in places %}
+            <li>
+                <strong>{{ place.name }}</strong>
+                <div class="place-description">
+                    {% if place.place_categories %}
+                        <span class="place-categories">Тип: {{ place.place_categories|join(', ') }}</span>
+                    {% endif %}
+                    {% if place.address %}
+                        <span class="place-address">{{ place.address }}</span>
+                    {% endif %}
+                </div>
+                <a href="{{ place.map_link }}" target="_blank">Показать на карте (OSM)</a>
+            </li>
+            {% endfor %}
+        </ul>
+     {% elif not error %}
+         <p class="info-message">К сожалению, по вашему запросу в указанном районе ничего не найдено.</p>
+    {% endif %}
+
+{% if llm_recommendations and not error %} {# error - это ошибка Geoapify #}
+    {# Проверяем, не является ли llm_recommendations сообщением об ошибке #}
+    {% if "Сервис персональных рекомендаций недоступен" in llm_recommendations
+        or "Не удалось сгенерировать рекомендации" in llm_recommendations
+        or "Не удалось получить конкретные рекомендации" in llm_recommendations
+        or "проблемы с API ключом" in llm_recommendations
+        or "превышения лимита запросов" in llm_recommendations
+        or "не ответил вовремя" in llm_recommendations
+        or "ошибки OpenAI" in llm_recommendations %}
+        <div class="recommendations">
+            <h3>Персональные рекомендации:</h3>
+            <p style="color: orange;"><i>{{ llm_recommendations }}</i></p> {# Показываем текст ошибки #}
+        </div>
+    {% else %}
+        {# Это нормальные рекомендации #}
+        <div class="recommendations">
+            <h3>Персональные рекомендации для туриста из Ирана:</h3>
+            <pre>{{ llm_recommendations }}</pre>
+        </div>
+    {% endif %}
+{% elif not error and places %} {# Ошибки Geoapify не было, места найдены, но рекоммендаций нет #}
+     <div class="recommendations">
+         <h3>Персональные рекомендации:</h3>
+         <p><i>Сервис рекомендаций не предоставил ответ или был недоступен.</i></p>
+     </div>
+{% endif %}
+
+    <a href="{{ url_for('index') }}" class="back-link">← Вернуться к выбору категорий</a>
+
+</body>
+</html>
