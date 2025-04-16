@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 import os
 import requests
@@ -21,10 +20,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Токен вашего бота
-TOKEN = "8071128622:AAFgeGieQRDNRxKTONRf52wm-RP4Z9aIvA4"
+TOKEN = "ВАШ ТОКЕН"
 
 # --- КОНФИГУРАЦИЯ ---
-GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY", "da31de3622fc4ee2a0112ab2f28391aa")
+GEOAPIFY_API_KEY = os.environ.get("GEOAPIFY_API_KEY", "ВАШ ТОКЕН")
 
 # Координаты Сочи и параметры поиска
 SOCHI_LAT = 43.5855
@@ -90,19 +89,6 @@ CATEGORIES = {
         "Turistik Yerler": "tourism",
         "RZD Trenleri": "rzd_tickets",
     },
-    "ar": {
-        "الطبيعة والحدائق": "natural,leisure.park",
-        "المطاعم والمقاهي": "catering.restaurant,catering.cafe,catering.fast_food",
-        "الشواطئ": "beach",
-        "الفنادق وبيوت الضيافة": "accommodation.hotel,accommodation.guest_house",
-        "المسارح والمتاحف": "entertainment.culture.theatre,entertainment.culture.gallery",
-        "الأحياء المائية وحديقة الدلافين": "entertainment.aquarium",
-        "الهدايا التذكارية": "commercial.gift_and_souvenir",
-        "المعالم السياحية": "tourism",
-        "قطارات RZD": "rzd_tickets",
-        "مطاعم حلال": "catering.restaurant.halal",
-        "مساجد": "building.place_of_worship.muslim",
-    },
 }
 
 # --- Словарь переводов ---
@@ -126,6 +112,18 @@ LANGUAGES = {
         "choose_language": "Выберите язык:",
         "language_set": "Язык установлен: {lang}",
         "detected_language": "Обнаружен ваш язык: Русский. Использовать его?",
+        "rzd_sochi_moscow": "Сочи - Москва",
+        "rzd_sochi_spb": "Сочи - СПб",
+        "rzd_sochi_krasnodar": "Сочи - Краснодар",
+        "rzd_other_route": "Другой маршрут",
+        "rzd_enter_route": "Введите маршрут: Город - Город",
+        "rzd_train": "Поезд",
+        "rzd_departure": "Отправление",
+        "rzd_arrival": "Прибытие",
+        "rzd_duration": "В пути",
+        "rzd_price_rub": "руб.",
+        "rzd_seats_available": "мест",
+        "rzd_buy_tickets": "🔗 Купить билеты:",
     },
     "en": {
         "welcome": "Hello! I'm a bot for finding places in Sochi and buying tickets.\nChoose categories:",
@@ -146,6 +144,18 @@ LANGUAGES = {
         "choose_language": "Choose language:",
         "language_set": "Language set: {lang}",
         "detected_language": "Detected your language: English. Use it?",
+        "rzd_sochi_moscow": "Sochi - Moscow",
+        "rzd_sochi_spb": "Sochi - Saint Petersburg",
+        "rzd_sochi_krasnodar": "Sochi - Krasnodar",
+        "rzd_other_route": "Other route",
+        "rzd_enter_route": "Enter route: City - City",
+        "rzd_train": "Train",
+        "rzd_departure": "Departure",
+        "rzd_arrival": "Arrival",
+        "rzd_duration": "Duration",
+        "rzd_price_rub": "RUB",
+        "rzd_seats_available": "seats",
+        "rzd_buy_tickets": "🔗 Buy tickets:",
     },
     "zh": {
         "welcome": "你好！我是索契景点搜索和购票机器人。\n选择类别：",
@@ -166,6 +176,18 @@ LANGUAGES = {
         "choose_language": "选择语言：",
         "language_set": "语言设置为：{lang}",
         "detected_language": "检测到您的语言：中文。使用它吗？",
+        "rzd_sochi_moscow": "索契 - 莫斯科",
+        "rzd_sochi_spb": "索契 - 圣彼得堡",
+        "rzd_sochi_krasnodar": "索契 - 克拉斯诺达尔",
+        "rzd_other_route": "其他路线",
+        "rzd_enter_route": "输入路线：城市 - 城市",
+        "rzd_train": "列车",
+        "rzd_departure": "出发",
+        "rzd_arrival": "到达",
+        "rzd_duration": "时长",
+        "rzd_price_rub": "卢布",
+        "rzd_seats_available": "座位",
+        "rzd_buy_tickets": "🔗 购买车票：",
     },
     "fa": {
         "welcome": "سلام! من رباتی برای یافتن مکان‌ها در سوچی و خرید بلیط هستم.\nدسته‌ها را انتخاب کنید:",
@@ -186,6 +208,18 @@ LANGUAGES = {
         "choose_language": "زبان را انتخاب کنید:",
         "language_set": "زبان تنظیم شد: {lang}",
         "detected_language": "زبان شما شناسایی شد: فارسی. از آن استفاده کنم؟",
+        "rzd_sochi_moscow": "سوچی - مسکو",
+        "rzd_sochi_spb": "سوچی - سن پترزبورگ",
+        "rzd_sochi_krasnodar": "سوچی - کراسنودار",
+        "rzd_other_route": "مسیر دیگر",
+        "rzd_enter_route": "مسیر را وارد کنید: شهر - شهر",
+        "rzd_train": "قطار",
+        "rzd_departure": "حرکت",
+        "rzd_arrival": "رسیدن",
+        "rzd_duration": "مدت زمان",
+        "rzd_price_rub": "روبل",
+        "rzd_seats_available": "صندلی",
+        "rzd_buy_tickets": "🔗 خرید بلیط:",
     },
     "tr": {
         "welcome": "Merhaba! Soçi'de yer bulma ve bilet satın alma botuyum.\nKategorileri seçin:",
@@ -206,64 +240,20 @@ LANGUAGES = {
         "choose_language": "Dil seçin:",
         "language_set": "Dil ayarlandı: {lang}",
         "detected_language": "Diliniz algılandı: Türkçe. Bunu kullansam mı?",
-    },
-    "ar": {
-        "welcome": "مرحبا! أنا بوت للبحث عن أماكن في سوتشي وشراء التذاكر.\nاختر الفئات:",
-        "categories": "الفئات المتاحة:",
-        "done": "تم",
-        "error_no_selection": "يرجى اختيار الفئات.",
-        "no_results": "لم يتم العثور على نتائج لطلبك ({categories}).",
-        "no_address": "العنوان غير محدد",
-        "timeout_error": "فشل في استرجاع البيانات: انتهت مهلة الخادم.",
-        "connection_error": "خطأ في الاتصال: {error}",
-        "general_error": "حدث خطأ: {error}",
-        "select_transport": "اختر المسار:",
-        "rzd_tickets": "قطارات RZD",
-        "flights": "تذاكر الطيران",
-        "buses": "الحافلات",
-        "address": "العنوان",
-        "map": "الخريطة",
-        "choose_language": "اختر اللغة:",
-        "language_set": "تم ضبط اللغة: {lang}",
-        "detected_language": "تم اكتشاف لغتك: العربية. هل أستخدمها؟",
+        "rzd_sochi_moscow": "Soçi - Moskova",
+        "rzd_sochi_spb": "Soçi - St. Petersburg",
+        "rzd_sochi_krasnodar": "Soçi - Krasnodar",
+        "rzd_other_route": "Diğer güzergah",
+        "rzd_enter_route": "Güzergahı girin: Şehir - Şehir",
+        "rzd_train": "Tren",
+        "rzd_departure": "Kalkış",
+        "rzd_arrival": "Varış",
+        "rzd_duration": "Süre",
+        "rzd_price_rub": "RUB",
+        "rzd_seats_available": "koltuk",
+        "rzd_buy_tickets": "🔗 Bilet satın al:",
     },
 }
-
-
-# Функция для запроса авиабилетов (заглушка)
-def get_flights(from_city, to_city, date, lang="ru"):
-    try:
-        flights = [
-            {
-                "flight": "SU123",
-                "departure": f"{date} 10:00",
-                "arrival": f"{date} 12:30",
-                "price": 15000,
-                "airline": "Aeroflot"
-            }
-        ]
-        return flights, None
-    except Exception as e:
-        logger.error(f"Ошибка при запросе авиабилетов: {e}")
-        return None, LANGUAGES[lang]["general_error"].format(error=e)
-
-
-# Функция для запроса автобусов (заглушка)
-def get_buses(from_city, to_city, date, lang="ru"):
-    try:
-        buses = [
-            {
-                "bus": "Bus 456",
-                "departure": f"{date} 09:00",
-                "arrival": f"{date} 15:00",
-                "price": 1200,
-                "company": "SochiBus"
-            }
-        ]
-        return buses, None
-    except Exception as e:
-        logger.error(f"Ошибка при запросе автобусов: {e}")
-        return None, LANGUAGES[lang]["general_error"].format(error=e)
 
 
 # Функция для запроса билетов РЖД (заглушка)
@@ -366,11 +356,10 @@ async def language(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("中文", callback_data="lang_zh")],
         [InlineKeyboardButton("فارسی", callback_data="lang_fa")],
         [InlineKeyboardButton("Türkçe", callback_data="lang_tr")],
-        [InlineKeyboardButton("العربية", callback_data="lang_ar")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        "Выберите язык / Choose language / 选择语言 / اختر اللغة:",
+        "Выберите язык / Choose language / 选择语言 / زبان را انتخاب کنید / Dil seçin:",
         reply_markup=reply_markup
     )
 
@@ -389,7 +378,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "zh": "zh",
         "fa": "fa",
         "tr": "tr",
-        "ar": "ar",
     }
     detected_lang = lang_map.get(user_lang[:2], None)
 
@@ -397,9 +385,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Если язык поддерживается, предлагаем его использовать
         user_data["language"] = detected_lang
         keyboard = [
-            [InlineKeyboardButton("Да / Yes / 是 / نعم", callback_data=f"confirm_lang_{detected_lang}")],
-            [InlineKeyboardButton("Нет, выбрать другой / No, choose another / 不，选择其他 / لا، اختر آخر",
-                                  callback_data="change_lang")]
+            [InlineKeyboardButton("Да / Yes / 是 / بله / Evet", callback_data=f"confirm_lang_{detected_lang}")],
+            [InlineKeyboardButton(
+                "Нет, выбрать другой / No, choose another / 不，选择其他 / خیر، یکی دیگر انتخاب کنید / Hayır, başka bir tane seç",
+                callback_data="change_lang")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text(
@@ -433,11 +422,13 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for cat in CATEGORIES[lang].keys()
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
+        # Удаляем старое сообщение
+        await query.message.delete()
+        # Отправляем новое сообщение с категориями
         await query.message.reply_text(
             LANGUAGES[lang]["language_set"].format(lang=lang),
             reply_markup=reply_markup
         )
-        await query.message.reply_text(LANGUAGES[lang]["welcome"], reply_markup=reply_markup)
         return
 
     # Обработка смены языка
@@ -448,11 +439,12 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("中文", callback_data="lang_zh")],
             [InlineKeyboardButton("فارسی", callback_data="lang_fa")],
             [InlineKeyboardButton("Türkçe", callback_data="lang_tr")],
-            [InlineKeyboardButton("العربية", callback_data="lang_ar")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
+        # Удаляем старое сообщение
+        await query.message.delete()
         await query.message.reply_text(
-            "Выберите язык / Choose language / 选择语言 / اختر اللغة:",
+            "Выберите язык / Choose language / 选择语言 / زبان را انتخاب کنید / Dil seçin:",
             reply_markup=reply_markup
         )
         return
@@ -461,13 +453,18 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if callback_data.startswith("lang_"):
         lang = callback_data[5:]
         user_data["language"] = lang
-        await query.message.reply_text(LANGUAGES[lang]["language_set"].format(lang=lang))
         keyboard = [
             [InlineKeyboardButton(cat, callback_data=f"category_{cat}")]
             for cat in CATEGORIES[lang].keys()
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.message.reply_text(LANGUAGES[lang]["welcome"], reply_markup=reply_markup)
+        # Удаляем старое сообщение
+        await query.message.delete()
+        # Отправляем новое сообщение с категориями
+        await query.message.reply_text(
+            LANGUAGES[lang]["language_set"].format(lang=lang),
+            reply_markup=reply_markup
+        )
         return
 
     # Обработка категорий
@@ -504,10 +501,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         is_rzd_selected = any(CATEGORIES[lang].get(cat) == "rzd_tickets" for cat in selected)
         if is_rzd_selected:
             keyboard = [
-                [InlineKeyboardButton("Сочи - Москва", callback_data="route_sochi_moscow")],
-                [InlineKeyboardButton("Сочи - СПб", callback_data="route_sochi_spb")],
-                [InlineKeyboardButton("Сочи - Краснодар", callback_data="route_sochi_krasnodar")],
-                [InlineKeyboardButton("Другой маршрут", callback_data="route_custom")],
+                [InlineKeyboardButton(LANGUAGES[lang]["rzd_sochi_moscow"], callback_data="route_sochi_moscow")],
+                [InlineKeyboardButton(LANGUAGES[lang]["rzd_sochi_spb"], callback_data="route_sochi_spb")],
+                [InlineKeyboardButton(LANGUAGES[lang]["rzd_sochi_krasnodar"], callback_data="route_sochi_krasnodar")],
+                [InlineKeyboardButton(LANGUAGES[lang]["rzd_other_route"], callback_data="route_custom")],
             ]
             await query.message.reply_text(
                 LANGUAGES[lang]["select_transport"],
@@ -532,7 +529,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.message.reply_text(response)
             user_data["selected_categories"] = []
 
-    # Обработка транспорта
+    # Обработка маршрутов
     elif callback_data.startswith("route_"):
         route = callback_data[6:]
 
@@ -544,7 +541,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             from_st, to_st = "Сочи", "Краснодар"
         else:
             await query.message.reply_text(
-                LANGUAGES[lang]["general_error"].format(error="Введите маршрут: Город - Город"))
+                LANGUAGES[lang]["general_error"].format(error=LANGUAGES[lang]["rzd_enter_route"]))
             return
 
         date = (datetime.now() + timedelta(days=1)).strftime("%d.%m.%Y")
@@ -561,16 +558,16 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = f"🚂 {LANGUAGES[lang]['rzd_tickets']} {from_st} - {to_st} ({date}):\n\n"
         for ticket in tickets:
             response += (
-                f"Поезд {ticket['train']}\n"
-                f"{LANGUAGES[lang]['address']}: {ticket['departure']}\n"
-                f"Прибытие: {ticket['arrival']}\n"
-                f"В пути: {ticket['duration']}\n"
+                f"{LANGUAGES[lang]['rzd_train']} {ticket['train']}\n"
+                f"{LANGUAGES[lang]['rzd_departure']}: {ticket['departure']}\n"
+                f"{LANGUAGES[lang]['rzd_arrival']}: {ticket['arrival']}\n"
+                f"{LANGUAGES[lang]['rzd_duration']}: {ticket['duration']}\n"
             )
             for cls, info in ticket['classes'].items():
-                response += f"- {cls}: {info['price']} руб. (мест: {info['seats']})\n"
+                response += f"- {cls}: {info['price']} {LANGUAGES[lang]['rzd_price_rub']} ({LANGUAGES[lang]['rzd_seats_available']}: {info['seats']})\n"
             response += "\n"
 
-        response += "🔗 Купить билеты: https://pass.rzd.ru"
+        response += f"{LANGUAGES[lang]['rzd_buy_tickets']} https://pass.rzd.ru"
         await query.message.reply_text(response)
 
 
@@ -600,16 +597,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             response = f"🚂 {LANGUAGES[lang]['rzd_tickets']} {from_st} - {to_st} ({date}):\n\n"
             for ticket in tickets:
                 response += (
-                    f"Поезд {ticket['train']}\n"
-                    f"{LANGUAGES[lang]['address']}: {ticket['departure']}\n"
-                    f"Прибытие: {ticket['arrival']}\n"
-                    f"В пути: {ticket['duration']}\n"
+                    f"{LANGUAGES[lang]['rzd_train']} {ticket['train']}\n"
+                    f"{LANGUAGES[lang]['rzd_departure']}: {ticket['departure']}\n"
+                    f"{LANGUAGES[lang]['rzd_arrival']}: {ticket['arrival']}\n"
+                    f"{LANGUAGES[lang]['rzd_duration']}: {ticket['duration']}\n"
                 )
                 for cls, info in ticket['classes'].items():
-                    response += f"- {cls}: {info['price']} руб. (мест: {info['seats']})\n"
+                    response += f"- {cls}: {info['price']} {LANGUAGES[lang]['rzd_price_rub']} ({LANGUAGES[lang]['rzd_seats_available']}: {info['seats']})\n"
                 response += "\n"
 
-            response += "🔗 Купить билеты: https://pass.rzd.ru"
+            response += f"{LANGUAGES[lang]['rzd_buy_tickets']} https://pass.rzd.ru"
             await update.message.reply_text(response)
             return
 
